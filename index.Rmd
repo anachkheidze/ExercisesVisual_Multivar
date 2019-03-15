@@ -1,0 +1,24 @@
+
+
+---
+title: "Multivariate Exercises"
+author: Ana Chkheidze
+output: html_document
+---
+
+## Course: Visual Analytics for Policy and Management
+
+```{r}
+library(ggplot2)
+library(reshape)
+```
+
+1. [Descriptive](#part2)
+
+2. [Inferential](#part3) 
+
+
+<a id='part2'></a>
+
+## Descriptive plot
+
