@@ -1,24 +1,158 @@
-
+<br> 
+<center><img src="http://i.imgur.com/sSaOozN.png" width="500"></center>
 
 ---
-title: "Multivariate Exercises"
-author: Ana Chkheidze
-output: html_document
----
+
+##Multivariate Exercises
 
 ## Course: Visual Analytics for Policy and Management
 
-```{r}
-library(ggplot2)
-library(reshape)
-```
+### Ana Chkheidze
+
+---
+
+_____
 
 1. [Descriptive](#part2)
 
 2. [Inferential](#part3) 
 
+_____
+
 
 <a id='part2'></a>
 
-## Descriptive plot
+## Descriptive plots
 
+```{r, include=FALSE}
+library(GGally) 
+library(ggiraph)
+library(ggiraphExtra)
+library(psych)
+library("fpc")
+library("factoextra")
+library(dotwhisker)
+library(broom)
+library(dplyr)
+```
+
+
+```{r, include=FALSE}
+library(openxlsx)
+link2="https://github.com/EvansDataScience/data/raw/master/safeCitiesIndex.xlsx"
+safe2=read.xlsx(link2)
+head(safe2)
+```
+
+
+```{r, include=FALSE}
+library(reshape)
+safe2A=melt(safe2,id.vars = 'city')
+head(safe2A)
+```
+
+
+
+```{r, fig.width=15, fig.height=25, eval=TRUE}
+library(ggplot2)
+base  = ggplot(safe2A, aes(x = variable, y = value, group = city))
+
+plot1 = base + geom_polygon(fill ='gray',col='grey50')+coord_polar()
+
+plot2 = plot1 + facet_wrap(~reorder(city,value, median, order=TRUE),ncol = 6)
+
+plot3 = plot2 + theme(axis.text.x = element_text(size =10),
+                legend.position="none",
+                strip.text = element_text(size = 17),
+                plot.title = element_text(size =30, hjust=0.4, face = "bold"),
+                plot.caption= element_text(size =15, hjust=0),
+                axis.title.x=element_blank(),
+                axis.title.y=element_blank())
+                
+brdBkgnGrid=element_rect(fill = "white",colour = "grey50",
+             size = 3,linetype = "dashed")
+
+lineGrid=element_line(size = 2,linetype = 'solid',colour = "pink1")
+
+plot4=plot3+ theme(panel.background = brdBkgnGrid,
+             panel.grid.major = lineGrid)+labs(title="Based on 4 dimensions, how safe are the cities?",
+                                               caption="Source:The Economist")
+
+plot4
+     
+```
+
+
+
+
+
+
+
+<a id='part3'></a>
+
+## Inferential plots
+
+```{r, include=FALSE}
+model1=lm(PERSONAL~HEALTH+INFRASTRUCTURE,data=safe2[,-1])
+summary(model1)
+```
+
+
+```{r, include=FALSE}
+model1_t = tidy(model1) %>%   
+    mutate(model = "Model 1") 
+
+model1_t
+```
+
+```{r, include=FALSE}
+model2=lm(PERSONAL~.,data=safe2[,-1]) # ~. means: all the remaining variables
+summary(model2)
+```
+
+
+```{r, include=FALSE}
+model2_t <- tidy(model2) %>% mutate(model = "Model 2")
+```
+
+
+```{r, include=FALSE}
+# combining
+allModels=rbind(model1_t, model2_t)
+
+#plotting
+dwplot(allModels) 
+```
+
+
+```{r, eval=TRUE}
+plot01=dwplot(allModels) + 
+               geom_vline(xintercept = 0, 
+                          colour = "steelblue", 
+                          linetype = "solid",
+                          alpha=0.7) +
+              scale_colour_grey(start = .1, end = .7)+
+              theme_bw()+
+              labs(title="Which model is better?",
+                   caption="Source:The Economist",
+                   x="Confidence Intervals",
+                   y="Independent Variables")
+
+plot02=plot01+annotate("text", x = 0.17, 
+                    y = 0.6, 
+                    label ="Confidence interval\n reference",
+                    size=3,
+                    alpha=0.6)+
+                    theme(legend.title = element_blank(),
+                    plot.title = element_text(size =15, hjust=0.5, face = "bold"),
+                    plot.caption= element_text(size =9, hjust=0))
+
+plot02                                             
+
+```
+
+
+
+_____
+
+The End
